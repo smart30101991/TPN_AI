@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- TIÊU ĐỀ ĐƯỢC CẬP NHẬT -->
+    <title>Hỗ trợ Dinh dưỡng Sơ sinh (PN/EN) v3 - Đã tính Lipid EN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Sử dụng font Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f6;
+        }
+        /* Tùy chỉnh thanh cuộn */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 6px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* Giúp input number hiển thị tốt hơn */
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-6">
+            <h1 class="text-3xl font-bold text-blue-800">Bảng tính Hỗ trợ Dinh dưỡng Sơ sinh (PN/EN)</h1>
+            <p class="text-lg text-gray-600">Công cụ tính toán kết hợp Nuôi ăn Tĩnh mạch (PN) và Tiêu hóa (EN) dựa trên phác đồ.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">1. Thông tin Bệnh nhân</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="weight" class="block text-sm font-medium text-gray-700">Cân nặng (kg)</label>
+                            <input type="number" id="weight" step="0.1" value="1.5" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="patientType" class="block text-sm font-medium text-gray-700">Đối tượng</label>
+                            <select id="patientType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="preterm">Sinh non</option>
+                                <option value="term">Sinh đủ tháng</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="ivLine" class="block text-sm font-medium text-gray-700">Đường truyền</label>
+                            <select id="ivLine" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="peripheral">Tĩnh mạch Ngoại vi</option>
+                                <option value="central">Tĩnh mạch Trung tâm</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">2. Mục tiêu Dinh dưỡng (Tổng EN + PN)</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <label for="targetFluid" class="block text-sm font-medium text-gray-700">Tổng dịch (ml/kg/ngày)</label>
+                            <input type="number" id="targetFluid" value="120" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="targetEnergy" class="block text-sm font-medium text-gray-700">Năng lượng (kcal/kg/ngày)</label>
+                            <input type="number" id="targetEnergy" value="100" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="targetProtein" class="block text-sm font-medium text-gray-700">Protein (g/kg/ngày)</label>
+                            <input type="number" id="targetProtein" step="0.1" value="3.0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="targetLipid" class="block text-sm font-medium text-gray-700">Lipid (g/kg/ngày)</label>
+                            <input type="number" id="targetLipid" step="0.1" value="3.0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">3. Nuôi ăn Tiêu hóa (EN)</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="milkType" class="block text-sm font-medium text-gray-700">Loại sữa</label>
+                            <select id="milkType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="S1">Sữa đủ tháng (S1)</option>
+                                <option value="SN" selected>Sữa sinh non (SN)</option>
+                                <option value="SDB">Sữa đặc biệt (SDB)</option>
+                                <option value="STP">Sữa thủy phân (STP)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="enVolume" class="block text-sm font-medium text-gray-700">Thể tích EN (ml/kg/ngày)</label>
+                            <input type="number" id="enVolume" value="20" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">4. Mục tiêu Điện giải TỔNG (cho EN + PN)</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <label for="targetNa" class="block text-sm font-medium text-gray-700">Natri (mEq/kg/ngày)</label>
+                            <input type="number" id="targetNa" step="0.1" value="2.0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="targetK" class="block text-sm font-medium text-gray-700">Kali (mEq/kg/ngày)</label>
+                            <input type="number" id="targetK" step="0.1" value="1.0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="targetCa" class="block text-sm font-medium text-gray-700">Calci (mEq/kg/ngày)</label>
+                            <input type="number" id="targetCa" step="0.1" value="1.5" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="targetP" class="block text-sm font-medium text-gray-700">Phospho (mmol/kg/ngày)</label>
+                            <input type="number" id="targetP" step="0.1" value="1.0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <button id="calculateBtn" class="w-full text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 py-3 px-6 rounded-lg shadow-md transition duration-200">
+                    Tính toán Thành phần Dinh dưỡng
+                </button>
+            </div>
+
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">Cảnh báo An toàn</h2>
+                    <div id="alertsContainer" class="space-y-2">
+                        <p class="text-gray-500">Chưa có cảnh báo.</p>
+                        </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">Tổng kết Dinh dưỡng (Đạt được)</h2>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium text-gray-700">Tổng dịch:</span>
+                            <span id="resTotalFluid" class="font-bold text-lg text-blue-700">0 ml/kg/ngày</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium text-gray-700">Tổng Năng lượng:</span>
+                            <span id="resTotalEnergy" class="font-bold text-lg text-blue-700">0 kcal/kg/ngày</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium text-gray-700">Tổng Protein:</span>
+                            <span id="resTotalProtein" class="font-bold text-lg text-blue-700">0 g/kg/ngày</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium text-gray-700">Tổng Lipid:</span>
+                            <span id="resTotalLipid" class="font-bold text-lg text-blue-700">0 g/kg/ngày</span>
+                        </div>
+                        <hr class="my-3">
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium text-gray-700">Tốc độ truyền Glucose (GIR):</span>
+                            <span id="resGIR" class="font-bold text-lg text-red-600">0 mg/kg/phút</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium text-gray-700">Nồng độ Dextrose (PN):</span>
+                            <span id="resDextroseConc" class="font-bold text-lg text-red-600">0 %</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">Thành phần Pha (cho 24h) - DỊCH PHA VÀ LIPID RIÊNG BIỆT</h2>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center bg-blue-50 p-2 rounded-md">
+                            <span class="font-bold text-blue-800">Tổng dịch pha (Không Lipid):</span>
+                            <span id="resPnTotalVolume" class="font-bold text-lg text-blue-800">0 ml</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Amino Acid 6.5%:</span>
+                            <span id="resAminoAcidML" class="font-medium text-gray-900">0 ml</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Dextrose 10%:</span>
+                            <span id="resDextrose10ML" class="font-medium text-gray-900">0 ml</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Dextrose 30%:</span>
+                            <span id="resDextrose30ML" class="font-medium text-gray-900">0 ml</span>
+                        </div>
+                        <hr class="my-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Natri Clorua 10%:</span>
+                            <span id="resNaML" class="font-medium text-gray-900">0 ml</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Kali Clorua 10%:</span>
+                            <span id="resKML" class="font-medium text-gray-900">0 ml</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Calci Gluconate 10%:</span>
+                            <span id="resCaML" class="font-medium text-gray-900">0 ml</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Phosphorus Aguettant:</span>
+                            <span id="resPML" class="font-medium text-gray-900">0 ml</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t">
+                        <h3 class="font-semibold text-gray-800 mb-2">Truyền Lipid (Riêng)</h3>
+                        <div class="flex justify-between items-center bg-yellow-50 p-2 rounded-md">
+                            <span class="font-bold text-yellow-800">Lipid 20%:</span>
+                            <span id="resLipidML_sep" class="font-bold text-lg text-yellow-800">0 ml</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t">
+                        <h3 class="font-semibold text-gray-800 mb-2">Tốc độ truyền (24h)</h3>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Tốc độ Dịch pha:</span>
+                            <span id="resRateSolution" class="font-medium text-gray-900">0 ml/giờ</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Tốc độ Lipid 20%:</span>
+                            <span id="resRateLipid" class="font-medium text-gray-900">0 ml/giờ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">Phân tích Chi tiết (Đơn vị /kg/ngày)</h2>
+                    <table class="w-full text-left table-fixed">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="p-2 font-medium text-gray-600">Thành phần</th>
+                                <th class="p-2 font-medium text-gray-600">Từ EN</th>
+                                <th class="p-2 font-medium text-gray-600">Từ PN</th>
+                                <th class="p-2 font-medium text-gray-600">Tổng</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="p-2 font-medium">Năng lượng (kcal)</td>
+                                <td class="p-2" id="sumEnKcal">0</td>
+                                <td class="p-2" id="sumPnKcal">0</td>
+                                <td class="p-2 font-bold" id="sumTotalKcal">0</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td class="p-2 font-medium">Protein (g)</td>
+                                <td class="p-2" id="sumEnProtein">0</td>
+                                <td class="p-2" id="sumPnProtein">0</td>
+                                <td class="p-2 font-bold" id="sumTotalProtein">0</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 font-medium">Lipid (g)</td>
+                                <td class="p-2" id="sumEnLipid">0</td>
+                                <td class="p-2" id="sumPnLipid">0</td>
+                                <td class="p-2 font-bold" id="sumTotalLipid_g">0</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td class="p-2 font-medium">Dextrose (g)</td>
+                                <td class="p-2" id="sumEnDextrose">0</td>
+                                <td class="p-2" id="sumPnDextrose">0</td>
+                                <td class="p-2 font-bold" id="sumTotalDextrose">0</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 font-medium">Tỷ lệ NPE/Protein (kcal/g)</td>
+                                <td class="p-2" id="sumEnRatio">0</td>
+                                <td class="p-2" id="sumPnRatio">0</td>
+                                <td class="p-2 font-bold" id="sumTotalRatio">0</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td class="p-2 font-medium">Natri (mEq)</td>
+                                <td class="p-2" id="sumEnNa">0</td>
+                                <td class="p-2" id="sumPnNa">0</td>
+                                <td class="p-2 font-bold" id="sumTotalNa">0</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 font-medium">Kali (mEq)</td>
+                                <td class="p-2" id="sumEnK">0</td>
+                                <td class="p-2" id="sumPnK">0</td>
+                                <td class="p-2 font-bold" id="sumTotalK">0</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td class="p-2 font-medium">Calci (mEq)</td>
+                                <td class="p-2" id="sumEnCa">0</td>
+                                <td class="p-2" id="sumPnCa">0</td>
+                                <td class="p-2 font-bold" id="sumTotalCa">0</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 font-medium">Phospho (mmol)</td>
+                                <td class="p-2" id="sumEnP">0</td>
+                                <td class="p-2" id="sumPnP">0</td>
+                                <td class="p-2 font-bold" id="sumTotalP">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CÁC HẰNG SỐ Y KHOA (TỪ FILE DOCX) ---
+        const STOCK_SOLUTIONS = {
+            AMINO_ACID: { conc: 0.065, kcal_per_g: 4 }, // 6.5%
+            LIPID: { conc: 0.20, kcal_per_g: 9 },      // 20%
+            DEXTROSE_10: { conc: 0.10, kcal_per_g: 3.4 },
+            DEXTROSE_30: { conc: 0.30, kcal_per_g: 3.4 }
+        };
+
+        const ELECTROLYTES = {
+            NA_CL: { mEq_per_ml: 1.7 }, // Natri Clorua 10%
+            K_CL: { mEq_per_ml: 1.3 },  // Kali Clorua 10%
+            CA_GLUCONATE: { mEq_per_ml: 0.45 }, // Calci Gluconate 10%
+            PHOSPHORUS: { mmol_per_ml: 0.66, mEqNa_per_ml: 1.33 } // Phosphorus Aguettant
+        };
+
+        // *** MỚI: HẰNG SỐ CHUYỂN ĐỔI mg -> mEq/mmol ***
+        const CONVERSIONS = {
+            MG_NA_TO_MEQ: 23,
+            MG_K_TO_MEQ: 39.1,
+            MG_CA_TO_MEQ: 20,
+            MG_P_TO_MMOL: 31
+        };
+
+        // *** THAY ĐỔI: Cập nhật MILK_TYPES với thành phần điện giải (mg/100ml) và lipid (g/100ml) ***
+        // Dữ liệu lipid (g) từ file docx
+        const MILK_TYPES = {
+            // Dinh dưỡng/100ml sữa
+            S1: { 
+                protein: 1.05, kcal: 68, lipid: 3.6, // <--- THÊM MỚI
+                na_mg: 16.9, k_mg: 84.5, ca_mg: 53.3, p_mg: 35.1 // [cite: 1]
+            },
+            SN: { 
+                protein: 1.9, kcal: 74, lipid: 4.1, // <--- THÊM MỚI
+                na_mg: 25, k_mg: 106, ca_mg: 78, p_mg: 46 // [cite: 2]
+            },
+            STP: { 
+                protein: 1.9, kcal: 68, lipid: 3.4, // <--- THÊM MỚI
+                na_mg: 32, k_mg: 83, ca_mg: 77, p_mg: 53 // [cite: 4]
+            },
+            SDB: { 
+                protein: 2.4, kcal: 81.2, 
+                lipid: (5.43 / 123) * 100, // (4.41g / 100ml) <--- THÊM MỚI
+                // Chuẩn hóa từ 123ml 
+                na_mg: 34.96,  // (43 / 123) * 100
+                k_mg: 104.88, // (129 / 123) * 100
+                ca_mg: 146.34, // (180 / 123) * 100
+                p_mg: 81.30   // (100 / 123) * 100
+            } 
+        };
+
+        const SAFETY_LIMITS = {
+            MAX_GIR: 12,
+            MAX_LIPID_G_PER_KG: 4.0,
+            MAX_PROTEIN_G_PER_KG_PRETERM: 3.5,
+            MAX_PROTEIN_G_PER_KG_TERM: 3.0,
+            MAX_AA_CONC_PERIPHERAL: 0.02,
+            MAX_DEX_CONC_PERIPHERAL: 0.125, // 12.5%
+            MAX_DEX_CONC_CENTRAL: 0.25,   // 25%
+            EN_STOP_PN_THRESHOLD: 100
+        };
+
+        // --- LẤY CÁC THÀNH PHẦN GIAO DIỆN ---
+        const btn = document.getElementById('calculateBtn');
+        const alertsContainer = document.getElementById('alertsContainer');
+
+        // Inputs
+        const inWeight = document.getElementById('weight');
+        const inPatientType = document.getElementById('patientType');
+        const inIvLine = document.getElementById('ivLine');
+        const inTargetFluid = document.getElementById('targetFluid');
+        const inTargetEnergy = document.getElementById('targetEnergy');
+        const inTargetProtein = document.getElementById('targetProtein');
+        const inTargetLipid = document.getElementById('targetLipid');
+        const inMilkType = document.getElementById('milkType');
+        const inEnVolume = document.getElementById('enVolume');
+        const inTargetNa = document.getElementById('targetNa');
+        const inTargetK = document.getElementById('targetK');
+        const inTargetCa = document.getElementById('targetCa');
+        const inTargetP = document.getElementById('targetP');
+
+        // Outputs
+        const resTotalFluid = document.getElementById('resTotalFluid');
+        const resTotalEnergy = document.getElementById('resTotalEnergy');
+        const resTotalProtein = document.getElementById('resTotalProtein');
+        const resTotalLipid = document.getElementById('resTotalLipid');
+        const resGIR = document.getElementById('resGIR');
+        const resDextroseConc = document.getElementById('resDextroseConc');
+        const resPnTotalVolume = document.getElementById('resPnTotalVolume');
+        const resAminoAcidML = document.getElementById('resAminoAcidML');
+        const resDextrose10ML = document.getElementById('resDextrose10ML');
+        const resDextrose30ML = document.getElementById('resDextrose30ML');
+        const resNaML = document.getElementById('resNaML');
+        const resKML = document.getElementById('resKML');
+        const resCaML = document.getElementById('resCaML');
+        const resPML = document.getElementById('resPML');
+        
+        const resLipidML_sep = document.getElementById('resLipidML_sep');
+        const resRateSolution = document.getElementById('resRateSolution');
+        const resRateLipid = document.getElementById('resRateLipid');
+        
+        // Summary Table
+        const sumEnKcal = document.getElementById('sumEnKcal');
+        const sumPnKcal = document.getElementById('sumPnKcal');
+        const sumTotalKcal = document.getElementById('sumTotalKcal');
+        const sumEnProtein = document.getElementById('sumEnProtein');
+        const sumPnProtein = document.getElementById('sumPnProtein');
+        const sumTotalProtein = document.getElementById('sumTotalProtein');
+        
+        const sumEnLipid = document.getElementById('sumEnLipid');
+        const sumPnLipid = document.getElementById('sumPnLipid');
+        const sumTotalLipid_g = document.getElementById('sumTotalLipid_g'); 
+        const sumEnDextrose = document.getElementById('sumEnDextrose');
+        const sumPnDextrose = document.getElementById('sumPnDextrose');
+        const sumTotalDextrose = document.getElementById('sumTotalDextrose');
+        const sumEnRatio = document.getElementById('sumEnRatio');
+        const sumPnRatio = document.getElementById('sumPnRatio');
+        const sumTotalRatio = document.getElementById('sumTotalRatio');
+
+        // *** MỚI: Lấy element cho bảng điện giải ***
+        const sumEnNa = document.getElementById('sumEnNa');
+        const sumPnNa = document.getElementById('sumPnNa');
+        const sumTotalNa = document.getElementById('sumTotalNa');
+        const sumEnK = document.getElementById('sumEnK');
+        const sumPnK = document.getElementById('sumPnK');
+        const sumTotalK = document.getElementById('sumTotalK');
+        const sumEnCa = document.getElementById('sumEnCa');
+        const sumPnCa = document.getElementById('sumPnCa');
+        const sumTotalCa = document.getElementById('sumTotalCa');
+        const sumEnP = document.getElementById('sumEnP');
+        const sumPnP = document.getElementById('sumPnP');
+        const sumTotalP = document.getElementById('sumTotalP');
+
+
+        // --- BỘ NÃO TÍNH TOÁN ---
+        btn.addEventListener('click', calculateNutrition);
+
+        function calculateNutrition() {
+            // 1. Khởi tạo
+            let alerts = [];
+            
+            // 2. Đọc tất cả Input
+            const weight = parseFloat(inWeight.value) || 0;
+            if (weight <= 0) {
+                alerts.push({ type: 'danger', message: 'Cân nặng phải lớn hơn 0.' });
+                updateAlerts(alerts); 
+                return;
+            }
+            
+            const patientType = inPatientType.value;
+            const ivLine = inIvLine.value;
+            const milkType = MILK_TYPES[inMilkType.value];
+
+            // Đọc mục tiêu TỔNG (đơn vị /kg/ngày)
+            const targetFluid_kg = parseFloat(inTargetFluid.value) || 0;
+            const targetEnergy_kg = parseFloat(inTargetEnergy.value) || 0;
+            let targetProtein_kg = parseFloat(inTargetProtein.value) || 0;
+            let targetLipid_kg = parseFloat(inTargetLipid.value) || 0;
+            const enVolume_kg = parseFloat(inEnVolume.value) || 0;
+            const targetNa_kg = parseFloat(inTargetNa.value) || 0;
+            const targetK_kg = parseFloat(inTargetK.value) || 0;
+            const targetCa_kg = parseFloat(inTargetCa.value) || 0;
+            const targetP_kg = parseFloat(inTargetP.value) || 0;
+
+            // Áp dụng giới hạn an toàn cho Protein và Lipid
+            const max_protein_limit = (patientType === 'preterm') ? SAFETY_LIMITS.MAX_PROTEIN_G_PER_KG_PRETERM : SAFETY_LIMITS.MAX_PROTEIN_G_PER_KG_TERM;
+            
+            if (targetProtein_kg > max_protein_limit) {
+                alerts.push({ type: 'warning', message: `Mục tiêu Protein (${targetProtein_kg.toFixed(1)} g/kg) vượt quá giới hạn (${max_protein_limit} g/kg). Đã tự động GIẢM.` });
+                targetProtein_kg = max_protein_limit;
+                inTargetProtein.value = max_protein_limit.toFixed(1);
+            }
+
+            if (targetLipid_kg > SAFETY_LIMITS.MAX_LIPID_G_PER_KG) {
+                 alerts.push({ type: 'danger', message: `VI PHẠM AN TOÀN: Liều Lipid (${targetLipid_kg} g/kg/ngày) vượt quá giới hạn (${SAFETY_LIMITS.MAX_LIPID_G_PER_KG} g/kg/ngày). Đã tự động GIẢM.` });
+                targetLipid_kg = SAFETY_LIMITS.MAX_LIPID_G_PER_KG;
+                inTargetLipid.value = targetLipid_kg.toFixed(1);
+            }
+            
+            // 3. Tính toán đóng góp của EN (Nuôi ăn Tiêu hóa) - Đơn vị /kg/ngày
+            const en_protein_g_kg = (milkType.protein / 100) * enVolume_kg;
+            const en_kcal_kg = (milkType.kcal / 100) * enVolume_kg;
+            
+            // *** CẬP NHẬT: Tính Lipid từ EN ***
+            const en_lipid_g_kg = (milkType.lipid / 100) * enVolume_kg;
+
+            // *** MỚI: Tính toán Điện giải từ EN (đơn vị /kg/ngày) ***
+            const en_na_mEq_kg = (milkType.na_mg / 100) * enVolume_kg / CONVERSIONS.MG_NA_TO_MEQ;
+            const en_k_mEq_kg = (milkType.k_mg / 100) * enVolume_kg / CONVERSIONS.MG_K_TO_MEQ;
+            const en_ca_mEq_kg = (milkType.ca_mg / 100) * enVolume_kg / CONVERSIONS.MG_CA_TO_MEQ;
+            const en_p_mmol_kg = (milkType.p_mg / 100) * enVolume_kg / CONVERSIONS.MG_P_TO_MMOL;
+
+            // 4. Tính toán nhu cầu PN (Nuôi ăn Tĩnh mạch)
+            
+            // (A) Tính thể tích
+            let pn_volume_ml_kg = targetFluid_kg - enVolume_kg;
+            if (pn_volume_ml_kg < 0) pn_volume_ml_kg = 0;
+            const total_iv_fluid_ml = pn_volume_ml_kg * weight; 
+
+            // (B) Tính Protein
+            let pn_protein_g_kg = targetProtein_kg - en_protein_g_kg;
+            if (pn_protein_g_kg < 0) pn_protein_g_kg = 0;
+            
+            // (C) Tính Lipid
+            // *** CẬP NHẬT: Lipid PN = Mục tiêu TỔNG - Lipid EN ***
+            let pn_lipid_g_kg = targetLipid_kg - en_lipid_g_kg; 
+            if (pn_lipid_g_kg < 0) {
+                 alerts.push({ type: 'info', message: `Lipid từ EN (${en_lipid_g_kg.toFixed(1)} g/kg) đã đủ mục tiêu. Không cần bù PN.` });
+                pn_lipid_g_kg = 0;
+            }
+
+            const pn_lipid_g_total = pn_lipid_g_kg * weight;
+            const lipid_ml = pn_lipid_g_total / STOCK_SOLUTIONS.LIPID.conc;
+            
+            let pn_solution_volume_ml = total_iv_fluid_ml - lipid_ml; 
+            if (pn_solution_volume_ml < 0) {
+                alerts.push({ type: 'danger', message: 'VI PHẠM THỂ TÍCH: Thể tích Lipid đã vượt quá tổng dịch Tĩnh mạch. Không thể pha dịch.' });
+                pn_solution_volume_ml = 0;
+            }
+            const pn_lipid_kcal = pn_lipid_g_total * STOCK_SOLUTIONS.LIPID.kcal_per_g;
+
+            // (D) Tính Năng lượng và Dextrose
+            const target_total_kcal = targetEnergy_kg * weight;
+            const en_total_kcal = en_kcal_kg * weight;
+            
+            const target_pn_protein_g = pn_protein_g_kg * weight;
+            const target_pn_protein_kcal = target_pn_protein_g * STOCK_SOLUTIONS.AMINO_ACID.kcal_per_g;
+            const target_pn_npe_kcal = (target_total_kcal - en_total_kcal) - target_pn_protein_kcal;
+            let target_pn_dextrose_kcal = target_pn_npe_kcal - pn_lipid_kcal;
+            if (target_pn_dextrose_kcal < 0) target_pn_dextrose_kcal = 0;
+            
+            let target_pn_dextrose_g = target_pn_dextrose_kcal / STOCK_SOLUTIONS.DEXTROSE_10.kcal_per_g;
+
+            // (E) Áp dụng Giới hạn An toàn cho Dextrose (GIR, Nồng độ)
+            const pn_non_lipid_volume = pn_solution_volume_ml;
+            const max_dex_conc = (ivLine === 'peripheral') ? SAFETY_LIMITS.MAX_DEX_CONC_PERIPHERAL : SAFETY_LIMITS.MAX_DEX_CONC_CENTRAL;
+            const max_g_by_gir = (SAFETY_LIMITS.MAX_GIR * weight * 1440) / 1000;
+            let max_g_by_conc = 0;
+            if (pn_non_lipid_volume > 0) {
+                 max_g_by_conc = pn_non_lipid_volume * max_dex_conc;
+            } else {
+                 max_g_by_conc = 0; 
+            }
+
+            let pn_dextrose_g_safe = target_pn_dextrose_g;
+            
+            if (pn_dextrose_g_safe > max_g_by_gir) {
+                alerts.push({ type: 'danger', message: `VI PHẠM GIR: Mục tiêu Dextrose (${target_pn_dextrose_g.toFixed(1)}g) vượt quá giới hạn GIR (${max_g_by_gir.toFixed(1)}g). Đã tự động GIẢM.` });
+                pn_dextrose_g_safe = max_g_by_gir;
+            }
+
+            if (pn_dextrose_g_safe > max_g_by_conc) {
+                alerts.push({ type: 'danger', message: `VI PHẠM NỒNG ĐỘ: Mục tiêu Dextrose (${pn_dextrose_g_safe.toFixed(1)}g) vượt quá giới hạn nồng độ ${ivLine === 'peripheral' ? 'Ngoại vi' : 'Trung tâm'} (${max_g_by_conc.toFixed(1)}g) trong thể tích dịch pha ${pn_non_lipid_volume.toFixed(0)}ml. Đã tự động GIẢM.` });
+                pn_dextrose_g_safe = max_g_by_conc;
+            }
+            
+            const pn_dextrose_kcal_safe = pn_dextrose_g_safe * STOCK_SOLUTIONS.DEXTROSE_10.kcal_per_g;
+
+            // (F) Giới hạn Protein dựa trên NPE an toàn
+            const final_safe_pn_npe_kcal = pn_dextrose_kcal_safe + pn_lipid_kcal;
+            let pn_protein_g_total_final = target_pn_protein_g; 
+            const max_safe_protein_g_by_npe = final_safe_pn_npe_kcal / 25; 
+            
+            if (target_pn_protein_g > 0 && target_pn_protein_g > max_safe_protein_g_by_npe) {
+                const pe_ratio = (target_pn_protein_g > 0) ? (final_safe_pn_npe_kcal / target_pn_protein_g) : 0;
+                alerts.push({ 
+                    type: 'danger', 
+                    message: `VI PHẠM TỶ LỆ P/E: Năng lượng phi-protein (PN) an toàn (${final_safe_pn_npe_kcal.toFixed(0)} kcal) không đủ cho Protein (PN) (${target_pn_protein_g.toFixed(1)}g) (Tỷ lệ ${pe_ratio.toFixed(0)}:1 < 25:1). Đã GIẢM Protein (PN) xuống ${max_safe_protein_g_by_npe.toFixed(1)}g.` 
+                });
+                pn_protein_g_total_final = max_safe_protein_g_by_npe;
+            }
+            
+            const pn_protein_kcal_final = pn_protein_g_total_final * STOCK_SOLUTIONS.AMINO_ACID.kcal_per_g;
+            const amino_acid_ml = pn_protein_g_total_final / STOCK_SOLUTIONS.AMINO_ACID.conc;
+            
+            // --- *** THAY ĐỔI: LOGIC TÍNH ĐIỆN GIẢI (BƯỚC 5) *** ---
+            
+            // 1. Tính mục tiêu điện giải CẦN BÙ BẰNG PN (/kg/ngày)
+            // (Đã trừ đi lượng điện giải từ EN)
+            let pn_targetNa_kg = targetNa_kg - en_na_mEq_kg;
+            let pn_targetK_kg = targetK_kg - en_k_mEq_kg;
+            let pn_targetCa_kg = targetCa_kg - en_ca_mEq_kg;
+            let pn_targetP_kg = targetP_kg - en_p_mmol_kg;
+
+            // 1b. Đảm bảo không bù âm
+            if (pn_targetNa_kg < 0) {
+                alerts.push({ type: 'info', message: `Natri từ EN (${en_na_mEq_kg.toFixed(1)} mEq/kg) đã đủ mục tiêu. Không cần bù PN.` });
+                pn_targetNa_kg = 0;
+            }
+            if (pn_targetK_kg < 0) {
+                 alerts.push({ type: 'info', message: `Kali từ EN (${en_k_mEq_kg.toFixed(1)} mEq/kg) đã đủ mục tiêu. Không cần bù PN.` });
+                pn_targetK_kg = 0;
+            }
+            if (pn_targetCa_kg < 0) {
+                alerts.push({ type: 'info', message: `Calci từ EN (${en_ca_mEq_kg.toFixed(1)} mEq/kg) đã đủ mục tiêu. Không cần bù PN.` });
+                pn_targetCa_kg = 0;
+            }
+            if (pn_targetP_kg < 0) {
+                alerts.push({ type: 'info', message: `Phospho từ EN (${en_p_mmol_kg.toFixed(1)} mmol/kg) đã đủ mục tiêu. Không cần bù PN.` });
+                pn_targetP_kg = 0;
+            }
+
+            // 2. Tính ml Phospho cần (từ mục tiêu PN)
+            const p_ml = (pn_targetP_kg * weight) / ELECTROLYTES.PHOSPHORUS.mmol_per_ml;
+            
+            // 3. Tính Natri (mEq) từ Phospho
+            const na_from_p_mEq = p_ml * ELECTROLYTES.PHOSPHORUS.mEqNa_per_ml;
+            
+            // 4. Tính tổng Natri (mEq) mục tiêu (từ mục tiêu PN)
+            const total_pn_na_target_mEq = pn_targetNa_kg * weight;
+            
+            // 5. Tính Natri (mEq) CẦN BÙ THÊM từ NaCl
+            let na_needed_from_nacl_mEq = total_pn_na_target_mEq - na_from_p_mEq;
+            if (na_needed_from_nacl_mEq < 0) {
+                alerts.push({ type: 'warning', message: `Lượng Natri từ Phosphorus (PN) (${na_from_p_mEq.toFixed(1)} mEq) đã vượt quá mục tiêu Natri (PN) (${total_pn_na_target_mEq.toFixed(1)} mEq). Không cần thêm NaCl.` });
+                na_needed_from_nacl_mEq = 0;
+            }
+
+            // 6. Tính ml NaCl 10% (từ phần cần bù thêm)
+            const na_ml = na_needed_from_nacl_mEq / ELECTROLYTES.NA_CL.mEq_per_ml;
+            
+            // 7. Tính các điện giải còn lại (từ mục tiêu PN)
+            const k_ml = (pn_targetK_kg * weight) / ELECTROLYTES.K_CL.mEq_per_ml;
+            const ca_ml = (pn_targetCa_kg * weight) / ELECTROLYTES.CA_GLUCONATE.mEq_per_ml;
+            // --- *** KẾT THÚC THAY ĐỔI BƯỚC 5 *** ---
+            
+            let pn_dextrose_g_to_use = pn_dextrose_g_safe; 
+            
+            // 6. Tính toán Thể tích Dextrose
+            let d10_ml = 0;
+            let d30_ml = 0;
+            
+            const non_dextrose_volume = amino_acid_ml + na_ml + k_ml + ca_ml + p_ml;
+            let available_volume_for_dextrose = pn_solution_volume_ml - non_dextrose_volume;
+            let achieved_pn_dextrose_g = 0;
+
+            if (available_volume_for_dextrose < 0) {
+                alerts.push({ type: 'danger', message: 'VI PHẠM THỂ TÍCH: Thể tích (AA, Lytes) vượt quá Tổng dịch pha. Không thể thêm Dextrose.' });
+                available_volume_for_dextrose = 0;
+            } else if (pn_dextrose_g_to_use <= 0) {
+                d10_ml = 0;
+            } else {
+                
+                d30_ml = (pn_dextrose_g_to_use - (0.10 * available_volume_for_dextrose)) / 0.20;
+                
+                if (d30_ml < 0) {
+                    d30_ml = 0;
+                    d10_ml = available_volume_for_dextrose;
+                    alerts.push({ type: 'warning', message: 'Mục tiêu Dextrose quá thấp (cần <10%). Đã dùng D10, nhưng có thể không đạt mục tiêu gram.' });
+                } else if (d30_ml > available_volume_for_dextrose) {
+                    d30_ml = available_volume_for_dextrose;
+                    d10_ml = 0;
+                    alerts.push({ type: 'warning', message: 'Mục tiêu Dextrose quá cao (cần >30%). Đã dùng D30, nhưng có thể không đạt mục tiêu gram.' });
+                } else {
+                    d10_ml = available_volume_for_dextrose - d30_ml;
+                }
+            }
+            
+            achieved_pn_dextrose_g = (d10_ml * STOCK_SOLUTIONS.DEXTROSE_10.conc) + (d30_ml * STOCK_SOLUTIONS.DEXTROSE_30.conc);
+
+            // 7. Tính toán Tổng kết và Các chỉ số An toàn
+            const achieved_pn_dextrose_kcal = achieved_pn_dextrose_g * STOCK_SOLUTIONS.DEXTROSE_10.kcal_per_g;
+            const achieved_pn_kcal = achieved_pn_dextrose_kcal + pn_protein_kcal_final + pn_lipid_kcal;
+            const achieved_total_kcal = en_total_kcal + achieved_pn_kcal;
+            const achieved_total_kcal_kg = achieved_total_kcal / weight;
+
+            const en_total_protein_g = en_protein_g_kg * weight;
+            const achieved_total_protein_g = en_total_protein_g + pn_protein_g_total_final;
+            const achieved_total_protein_g_kg = achieved_total_protein_g / weight;
+
+            // *** CẬP NHẬT: Tính tổng lipid ***
+            const en_total_lipid_g = en_lipid_g_kg * weight;
+            const achieved_total_lipid_g = en_total_lipid_g + pn_lipid_g_total;
+            const achieved_total_lipid_g_kg = achieved_total_lipid_g / weight;
+
+            const gir = (achieved_pn_dextrose_g * 1000) / (weight * 1440);
+
+            let dextrose_concentration = 0;
+            if (pn_non_lipid_volume > 0) {
+                dextrose_concentration = achieved_pn_dextrose_g / pn_non_lipid_volume;
+            }
+
+            // 8. Kiểm tra Cảnh báo An toàn (Sau khi tính toán)
+            let aa_concentration = 0;
+            if (pn_non_lipid_volume > 0) {
+                aa_concentration = pn_protein_g_total_final / pn_non_lipid_volume;
+            }
+            if (ivLine === 'peripheral' && aa_concentration > SAFETY_LIMITS.MAX_AA_CONC_PERIPHERAL) {
+                alerts.push({ 
+                    type: 'danger', 
+                    message: `VI PHẠM NỒNG ĐỘ AA: Nồng độ Amino Acid (${(aa_concentration * 100).toFixed(1)}%) vượt quá giới hạn ngoại vi (${(SAFETY_LIMITS.MAX_AA_CONC_PERIPHERAL * 100).toFixed(0)}%).` 
+                });
+            }
+
+            if (achieved_pn_dextrose_g < (pn_dextrose_g_safe - 0.1)) { 
+                const achieved_pn_npe_kcal = achieved_pn_dextrose_kcal + pn_lipid_kcal;
+                const required_npe = pn_protein_g_total_final * 25;
+                
+                if (pn_protein_g_total_final > 0 && achieved_pn_npe_kcal < required_npe) {
+                    const final_pe_ratio = achieved_pn_npe_kcal / pn_protein_g_total_final;
+                    alerts.push({ 
+                        type: 'warning', 
+                        message: `CẢNH BÁO P/E (Thể tích): Do giới hạn thể tích, Năng lượng phi-protein thực tế (${achieved_pn_npe_kcal.toFixed(0)} kcal) thấp hơn mức tối ưu cho Protein. Tỷ lệ P/E thực tế là ${final_pe_ratio.toFixed(0)}:1.` 
+                    });
+                }
+            }
+
+            if (enVolume_kg >= SAFETY_LIMITS.EN_STOP_PN_THRESHOLD) {
+                 alerts.push({ type: 'info', message: `Thể tích EN (${enVolume_kg} ml/kg/ngày) đã đạt ngưỡng >= ${SAFETY_LIMITS.EN_STOP_PN_THRESHOLD} ml/kg/ngày. Cân nhắc ngưng PN.` });
+            }
+
+            if (alerts.length === 0) {
+                alerts.push({ type: 'success', message: 'Tất cả các chỉ số đều trong giới hạn an toàn.' });
+            }
+            
+            // 9. Tính toán cho Bảng Phân tích Chi tiết
+            // *** CẬP NHẬT: Tính NPE/Ratio của EN (bao gồm lipid) ***
+            const en_protein_kcal = en_total_protein_g * STOCK_SOLUTIONS.AMINO_ACID.kcal_per_g;
+            // Năng lượng phi protein của EN = Tổng kcal EN - kcal từ protein EN
+            const en_npe_kcal = en_total_kcal - en_protein_kcal; 
+            const en_ratio = (en_total_protein_g > 0) ? (en_npe_kcal / en_total_protein_g) : 0;
+            
+            const pn_protein_kcal = pn_protein_kcal_final; 
+            const pn_npe_kcal = achieved_pn_dextrose_kcal + pn_lipid_kcal;
+            const pn_ratio = (pn_protein_g_total_final > 0) ? (pn_npe_kcal / pn_protein_g_total_final) : 0;
+            
+            const total_protein_g = achieved_total_protein_g;
+            const total_protein_kcal = total_protein_g * STOCK_SOLUTIONS.AMINO_ACID.kcal_per_g;
+            const total_npe_kcal = achieved_total_kcal - total_protein_kcal;
+            const total_ratio = (total_protein_g > 0) ? (total_npe_kcal / total_protein_g) : 0;
+            
+            const pn_dextrose_g_kg = (weight > 0) ? (achieved_pn_dextrose_g / weight) : 0;
+            const pn_lipid_g_kg_final = (weight > 0) ? (pn_lipid_g_total / weight) : 0;
+
+            // *** MỚI: Tính toán điện giải PN thực tế (/kg/ngày) ***
+            const achieved_pn_na_mEq_kg = (na_needed_from_nacl_mEq + na_from_p_mEq) / weight;
+            const achieved_pn_k_mEq_kg = ((k_ml * ELECTROLYTES.K_CL.mEq_per_ml) / weight);
+            const achieved_pn_ca_mEq_kg = ((ca_ml * ELECTROLYTES.CA_GLUCONATE.mEq_per_ml) / weight);
+            const achieved_pn_p_mmol_kg = ((p_ml * ELECTROLYTES.PHOSPHORUS.mmol_per_ml) / weight);
+
+
+            // 10. HIỂN THỊ KẾT QUẢ
+            
+            // --- LOGIC LÀM TRÒN ĐỂ PHA CHẾ ---
+            const amino_acid_ml_rounded = roundToTen(amino_acid_ml);
+            const d10_ml_rounded = roundToTen(d10_ml);
+            const d30_ml_rounded = roundToTen(d30_ml);
+            const na_ml_rounded = roundToHalf(na_ml);
+            const k_ml_rounded = roundToHalf(k_ml);
+            const ca_ml_rounded = roundToHalf(ca_ml);
+            const p_ml_rounded = roundToHalf(p_ml);
+
+            const pn_solution_volume_rounded = amino_acid_ml_rounded + d10_ml_rounded + d30_ml_rounded + na_ml_rounded + k_ml_rounded + ca_ml_rounded + p_ml_rounded;
+            const rate_solution_rounded = roundToUnit(pn_solution_volume_rounded / 24);
+            const lipid_ml_rounded = roundToUnit(lipid_ml);
+            const rate_lipid_rounded = roundToUnit(lipid_ml_rounded / 24);
+
+            // A. Khối Tổng kết (Giá trị /kg/ngày)
+            resTotalFluid.textContent = `${(enVolume_kg + pn_volume_ml_kg).toFixed(0)} ml/kg/ngày`;
+            resTotalEnergy.textContent = `${achieved_total_kcal_kg.toFixed(0)} kcal/kg/ngày`;
+            resTotalProtein.textContent = `${achieved_total_protein_g_kg.toFixed(1)} g/kg/ngày`;
+            resTotalLipid.textContent = `${achieved_total_lipid_g_kg.toFixed(1)} g/kg/ngày`;
+            resGIR.textContent = `${gir.toFixed(1)} mg/kg/phút`;
+            resDextroseConc.textContent = `${(dextrose_concentration * 100).toFixed(1)} %`;
+
+            // B. Khối Thành phần Pha (Giá trị đã làm tròn)
+            resPnTotalVolume.textContent = `${pn_solution_volume_rounded.toFixed(1)} ml`;
+            resAminoAcidML.textContent = `${amino_acid_ml_rounded.toFixed(1)} ml`;
+            resDextrose10ML.textContent = `${d10_ml_rounded.toFixed(1)} ml`;
+            resDextrose30ML.textContent = `${d30_ml_rounded.toFixed(1)} ml`;
+            resNaML.textContent = `${na_ml_rounded.toFixed(1)} ml`;
+            resKML.textContent = `${k_ml_rounded.toFixed(1)} ml`;
+            resCaML.textContent = `${ca_ml_rounded.toFixed(1)} ml`;
+            resPML.textContent = `${p_ml_rounded.toFixed(1)} ml`;
+            
+            resLipidML_sep.textContent = `${lipid_ml_rounded.toFixed(1)} ml`;
+            resRateSolution.textContent = `${rate_solution_rounded.toFixed(0)} ml/giờ`;
+            resRateLipid.textContent = `${rate_lipid_rounded.toFixed(0)} ml/giờ`;
+
+            // C. Bảng Tóm tắt (Giá trị /kg/ngày)
+            sumEnKcal.textContent = en_kcal_kg.toFixed(0);
+            sumPnKcal.textContent = (weight > 0 ? (achieved_pn_kcal / weight) : 0).toFixed(0);
+            sumTotalKcal.textContent = achieved_total_kcal_kg.toFixed(0);
+            
+            sumEnProtein.textContent = en_protein_g_kg.toFixed(1);
+            sumPnProtein.textContent = (weight > 0 ? (pn_protein_g_total_final / weight) : 0).toFixed(1);
+            sumTotalProtein.textContent = achieved_total_protein_g_kg.toFixed(1);
+
+            // *** CẬP NHẬT: Hiển thị lipid từ EN và PN ***
+            sumEnLipid.textContent = en_lipid_g_kg.toFixed(1); 
+            sumPnLipid.textContent = pn_lipid_g_kg_final.toFixed(1);
+            sumTotalLipid_g.textContent = achieved_total_lipid_g_kg.toFixed(1); 
+            
+            sumEnDextrose.textContent = '-'; // Sữa không được coi là cung cấp 'dextrose'
+            sumPnDextrose.textContent = pn_dextrose_g_kg.toFixed(1);
+            sumTotalDextrose.textContent = (pn_dextrose_g_kg + 0.0).toFixed(1); 
+
+            // *** CẬP NHẬT: Hiển thị tỷ lệ P/E của EN ***
+            sumEnRatio.textContent = en_ratio.toFixed(0); 
+            sumPnRatio.textContent = pn_ratio.toFixed(0);
+            sumTotalRatio.textContent = total_ratio.toFixed(0);
+
+            // *** MỚI: Hiển thị bảng điện giải ***
+            sumEnNa.textContent = en_na_mEq_kg.toFixed(1);
+            sumPnNa.textContent = achieved_pn_na_mEq_kg.toFixed(1);
+            sumTotalNa.textContent = (en_na_mEq_kg + achieved_pn_na_mEq_kg).toFixed(1);
+            
+            sumEnK.textContent = en_k_mEq_kg.toFixed(1);
+            sumPnK.textContent = achieved_pn_k_mEq_kg.toFixed(1);
+            sumTotalK.textContent = (en_k_mEq_kg + achieved_pn_k_mEq_kg).toFixed(1);
+
+            sumEnCa.textContent = en_ca_mEq_kg.toFixed(1);
+            sumPnCa.textContent = achieved_pn_ca_mEq_kg.toFixed(1);
+            sumTotalCa.textContent = (en_ca_mEq_kg + achieved_pn_ca_mEq_kg).toFixed(1);
+
+            sumEnP.textContent = en_p_mmol_kg.toFixed(1);
+            sumPnP.textContent = achieved_pn_p_mmol_kg.toFixed(1);
+            sumTotalP.textContent = (en_p_mmol_kg + achieved_pn_p_mmol_kg).toFixed(1);
+
+            // D. Cập nhật Cảnh báo
+            updateAlerts(alerts);
+        }
+
+        // --- Hàm Hỗ trợ ---
+
+        function roundToUnit(value) {
+            return Math.round(value);
+        }
+        function roundToTen(value) {
+            return Math.round(value / 10) * 10;
+        }
+        function roundToHalf(value) {
+            return Math.round(value * 2) / 2;
+        }
+
+        function updateAlerts(alerts) {
+            alertsContainer.innerHTML = ''; 
+            if (alerts.length === 0) {
+                alertsContainer.innerHTML = '<p class="text-gray-500">Chưa có cảnh báo.</p>';
+                return;
+            }
+            
+            alerts.sort((a, b) => {
+                const order = { danger: 0, warning: 1, info: 2, success: 3 };
+                return order[a.type] - order[b.type];
+            });
+
+            alerts.forEach(alert => {
+                alertsContainer.innerHTML += buildAlertHTML(alert.type, alert.message);
+            });
+        }
+
+        function buildAlertHTML(type, message) {
+            let bgColor, borderColor, textColor, icon;
+            switch (type) {
+                case 'danger':
+                    bgColor = 'bg-red-100';
+                    borderColor = 'border-red-500';
+                    textColor = 'text-red-700';
+                    icon = '⚠️';
+                    break;
+                case 'warning':
+                    bgColor = 'bg-yellow-100';
+                    borderColor = 'border-yellow-500';
+                    textColor = 'text-yellow-700';
+                    icon = '🔔';
+                    break;
+                case 'info':
+                    bgColor = 'bg-blue-100';
+                    borderColor = 'border-blue-500';
+                    textColor = 'text-blue-700';
+                    icon = 'ℹ️';
+                    break;
+                case 'success':
+                    bgColor = 'bg-green-100';
+                    borderColor = 'border-green-500';
+                    textColor = 'text-green-700';
+                    icon = '✅';
+                    break;
+            }
+            
+            return `
+                <div class="${bgColor} border-l-4 ${borderColor} ${textColor} p-4 rounded-md" role="alert">
+                    <p class="font-bold">${icon} ${type.charAt(0).toUpperCase() + type.slice(1)}</p>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        // Tự động chạy tính toán lần đầu khi tải trang
+        document.addEventListener('DOMContentLoaded', calculateNutrition);
+        // Thêm event listener cho tất cả input để tự động tính toán
+        document.querySelectorAll('input, select').forEach(item => {
+            item.addEventListener('change', calculateNutrition);
+        });
+
+    </script>
+</body>
+</html>
